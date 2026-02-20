@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Merkley Partners — Paid Social Task Board</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+    font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+    color: #E2E8F0;
+  }
+
+  /* Header */
+  .header { padding: 24px 32px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: #fff; font-family: 'Space Mono', monospace;
+  }
+  .header-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: #F8FAFC; }
+  .header-sub { margin-top: 2px; font-size: 13px; color: #64748B; font-family: 'Space Mono', monospace; }
+  .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .btn-primary {
+    padding: 10px 20px; background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    transition: all 0.2s; box-shadow: 0 4px 12px rgba(99,102,241,0.3); font-family: inherit;
+  }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn-secondary {
+    padding: 10px 16px; background: rgba(255,255,255,0.06); color: #CBD5E1;
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+  .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .filter-group { display: flex; align-items: center; gap: 6px; }
+  .filter-label {
+    font-size: 11px; color: #64748B; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; font-family: 'Space Mono', monospace;
+  }
+  .filter-select {
+    padding: 6px 10px; background: #1E293B; color: #CBD5E1;
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+    font-size: 13px; cursor: pointer; outline: none; font-family: inherit;
+  }
+  .btn-clear-filter {
+    padding: 6px 12px; background: rgba(239,68,68,0.15); color: #FCA5A5;
+    border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;
+    font-size: 12px; cursor: pointer; font-family: inherit;
+  }
+
+  /* Board */
+  .board {
+    display: flex; gap: 16px; padding: 20px 24px;
+    min-height: calc(100vh - 160px); overflow-x: auto;
+  }
+  .column {
+    min-width: 300px; flex: 1;
+    background: rgba(255,255,255,0.02); border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.05);
+    display: flex; flex-direction: column; transition: all 0.2s;
+  }
+  .column.drag-over { background: rgba(99,102,241,0.08); border: 2px dashed rgba(99,102,241,0.4); }
+  .col-header {
+    padding: 14px 16px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .col-header-left { display: flex; align-items: center; gap: 10px; }
+  .col-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .col-name { font-size: 14px; font-weight: 700; color: #F1F5F9; letter-spacing: -0.3px; }
+  .col-count {
+    background: rgba(255,255,255,0.08); color: #94A3B8; font-size: 12px;
+    font-weight: 600; padding: 2px 8px; border-radius: 10px; font-family: 'Space Mono', monospace;
+  }
+  .col-btns { display: flex; gap: 6px; }
+  .col-add-btn {
+    width: 26px; height: 26px; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1); background: transparent;
+    color: #64748B; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .col-add-btn:hover { background: rgba(255,255,255,0.08); color: #E2E8F0; }
+  .col-del-btn {
+    width: 26px; height: 26px; border-radius: 8px;
+    border: 1px solid rgba(239,68,68,0.15); background: transparent;
+    color: #64748B; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .col-del-btn:hover { background: rgba(239,68,68,0.15); color: #FCA5A5; }
+  .col-tasks { padding: 10px; flex: 1; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+  .empty-col { flex: 1; display: flex; align-items: center; justify-content: center; color: #475569; font-size: 13px; font-style: italic; padding: 40px 0; }
+
+  /* Priority card tints */
+  .card-high { background: rgba(239, 68, 68, 0.06); }
+  .card-high:hover { background: rgba(239, 68, 68, 0.11) !important; }
+  .card-medium { background: rgba(245, 158, 11, 0.06); }
+  .card-medium:hover { background: rgba(245, 158, 11, 0.11) !important; }
+  .card-low { background: rgba(59, 130, 246, 0.06); }
+  .card-low:hover { background: rgba(59, 130, 246, 0.11) !important; }
+
+  .task-card {
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 14px; cursor: grab; transition: all 0.15s;
+  }
+  .task-card.dragging { opacity: 0.5; }
+  .task-tags { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .tag {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 6px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .task-title { margin: 0 0 10px; font-size: 13px; font-weight: 600; color: #F1F5F9; line-height: 1.4; }
+  .task-title.done { text-decoration: line-through; opacity: 0.6; }
+  .task-footer { display: flex; align-items: center; justify-content: space-between; }
+  .assignee-row { display: flex; align-items: center; gap: 6px; }
+  .avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #fff;
+  }
+  .assignee-name { font-size: 11px; color: #94A3B8; }
+  .due-date { font-size: 11px; color: #64748B; font-family: 'Space Mono', monospace; }
+  .due-date.overdue { color: #FCA5A5; font-weight: 700; }
+
+  /* Sub-tasks on card */
+  .subtasks { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .subtask-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .subtask-label { font-size: 10px; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'Space Mono', monospace; }
+  .subtask-progress { font-size: 10px; color: #64748B; font-family: 'Space Mono', monospace; }
+  .subtask-bar { height: 3px; background: rgba(255,255,255,0.08); border-radius: 2px; margin-bottom: 6px; overflow: hidden; }
+  .subtask-fill { height: 100%; background: #6366F1; border-radius: 2px; transition: width 0.3s; }
+  .subtask-item { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 12px; color: #94A3B8; cursor: pointer; }
+  .subtask-item:hover { color: #CBD5E1; }
+  .subtask-check {
+    width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 9px; transition: all 0.15s; cursor: pointer;
+  }
+  .subtask-check.checked { background: #6366F1; border-color: #6366F1; }
+  .subtask-text.checked { text-decoration: line-through; opacity: 0.5; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .modal {
+    background: #1E293B; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
+    padding: 28px; width: 500px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+  }
+  .modal h2 { margin: 0 0 20px; font-size: 18px; font-weight: 700; color: #F8FAFC; }
+  .modal-form { display: flex; flex-direction: column; gap: 14px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-label {
+    display: block; font-size: 11px; font-weight: 600; color: #94A3B8;
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;
+    font-family: 'Space Mono', monospace;
+  }
+  .form-input, .form-select {
+    width: 100%; padding: 10px 12px; background: #0F172A; color: #E2E8F0;
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+    font-size: 14px; outline: none; font-family: 'DM Sans', system-ui, sans-serif;
+  }
+  .form-input:focus, .form-select:focus { border-color: rgba(99,102,241,0.4); }
+
+  .subtask-edit-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .subtask-edit-input {
+    flex: 1; padding: 7px 10px; background: #0F172A; color: #E2E8F0;
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;
+    font-size: 13px; outline: none; font-family: inherit;
+  }
+  .subtask-edit-input:focus { border-color: rgba(99,102,241,0.4); }
+  .subtask-remove-btn {
+    width: 24px; height: 24px; border-radius: 6px; border: none;
+    background: rgba(239,68,68,0.15); color: #FCA5A5; cursor: pointer;
+    font-size: 14px; display: flex; align-items: center; justify-content: center;
+  }
+  .subtask-add-btn {
+    padding: 6px 12px; background: rgba(99,102,241,0.1); color: #A5B4FC;
+    border: 1px dashed rgba(99,102,241,0.3); border-radius: 6px;
+    font-size: 12px; cursor: pointer; font-family: inherit; width: 100%; margin-top: 4px;
+  }
+  .subtask-add-btn:hover { background: rgba(99,102,241,0.2); }
+
+  .modal-actions { display: flex; justify-content: space-between; margin-top: 24px; }
+  .modal-actions-right { display: flex; gap: 10px; }
+  .btn-delete {
+    padding: 10px 16px; background: rgba(239,68,68,0.12); color: #FCA5A5;
+    border: 1px solid rgba(239,68,68,0.2); border-radius: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .btn-cancel {
+    padding: 10px 18px; background: rgba(255,255,255,0.05); color: #94A3B8;
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+    font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .btn-save {
+    padding: 10px 20px; background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    color: #fff; border: none; border-radius: 10px; font-size: 13px; font-weight: 600;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(99,102,241,0.3); font-family: inherit;
+  }
+
+  /* Prompt modal */
+  .prompt-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center; z-index: 1100;
+  }
+  .prompt-box {
+    background: #1E293B; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1);
+    padding: 24px; width: 380px; max-width: 90vw; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .prompt-box h3 { margin: 0 0 14px; font-size: 16px; font-weight: 700; color: #F8FAFC; }
+  .prompt-box .form-input { margin-bottom: 16px; }
+  .prompt-actions { display: flex; gap: 10px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-left">
+      <div class="logo">MP</div>
+      <div>
+        <div class="header-title">Merkley Partners — Paid Social</div>
+        <div class="header-sub">Team Task Board</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" onclick="openAddColumn()">+ Add Section</button>
+      <button class="btn-secondary" onclick="openAddUser()">+ Add Team Member</button>
+      <button class="btn-primary" onclick="openNewTask('To Do')"><span style="font-size:18px;line-height:1">+</span> New Task</button>
+    </div>
+  </div>
+  <div class="filters" id="filters"></div>
+</div>
+
+<div class="board" id="board"></div>
+
+<!-- Task Modal -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2 id="modal-title">New Task</h2>
+    <div class="modal-form">
+      <div>
+        <label class="form-label">Task</label>
+        <input class="form-input" id="f-title" placeholder="e.g. Launch Meta ASC for TSC Spring..." />
+      </div>
+      <div class="form-row">
+        <div>
+          <label class="form-label">Assignee</label>
+          <select class="form-select" id="f-assignee"></select>
+        </div>
+        <div>
+          <label class="form-label">Priority</label>
+          <select class="form-select" id="f-priority"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label class="form-label">Platform</label>
+          <select class="form-select" id="f-platform"></select>
+        </div>
+        <div>
+          <label class="form-label">Due Date</label>
+          <input type="date" class="form-input" id="f-due" />
+        </div>
+      </div>
+      <div>
+        <label class="form-label">Status</label>
+        <select class="form-select" id="f-column"></select>
+      </div>
+      <div>
+        <label class="form-label">Sub-Tasks</label>
+        <div id="subtask-edit-area"></div>
+        <button class="subtask-add-btn" onclick="addSubtaskField()">+ Add Sub-Task</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <div id="delete-area"></div>
+      <div class="modal-actions-right">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save" id="btn-save" onclick="saveTask()">Add Task</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Prompt Modal -->
+<div class="prompt-overlay" id="prompt" style="display:none" onclick="if(event.target===this)closePrompt()">
+  <div class="prompt-box">
+    <h3 id="prompt-title">Add</h3>
+    <input class="form-input" id="prompt-input" placeholder="" />
+    <div class="prompt-actions">
+      <button class="btn-cancel" onclick="closePrompt()">Cancel</button>
+      <button class="btn-save" onclick="confirmPrompt()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG — Edit these to customize your board
+// ============================================================
+let TEAM_MEMBERS = ["Bryan", "Seve", "Olivia", "Catie", "Unassigned"];
+const PLATFORMS = ["Meta", "Pinterest", "TikTok", "Nextdoor", "Reddit", "Snap", "X"];
+const PRIORITIES = ["High", "Medium", "Low"];
+let COLUMNS = ["To Do", "In Progress", "Done"];
+
+const COLUMN_COLORS = ["#6366F1","#F59E0B","#10B981","#EC4899","#06B6D4","#F97316","#8B5CF6","#14B8A6","#E11D48","#3B82F6"];
+
+// ============================================================
+// SAMPLE TASKS — Edit these to update default tasks
+// ============================================================
+let tasks = [
+  { id:"1", title:"Launch Chick Days Campaign - Meta", assignee:"Bryan", priority:"High", platform:"Meta", dueDate:"2026-02-23", column:"In Progress", subtasks:[
+    {text:"Upload creative assets",done:true},{text:"Set up audience targeting",done:false},{text:"Configure budget & bidding",done:false}
+  ]},
+  { id:"2", title:"BUILT Bar Creative Refresh - TikTok Spark Ads", assignee:"Seve", priority:"High", platform:"TikTok", dueDate:"2026-02-24", column:"To Do", subtasks:[] },
+  { id:"3", title:"TSC Pinterest P+ Campaign Setup", assignee:"Bryan", priority:"Medium", platform:"Pinterest", dueDate:"2026-02-25", column:"To Do", subtasks:[
+    {text:"Request P+ beta access",done:true},{text:"Build pin creatives",done:false}
+  ]},
+  { id:"4", title:"Weekly Performance Report - All Platforms", assignee:"Olivia", priority:"Medium", platform:"Meta", dueDate:"2026-02-21", column:"To Do", subtasks:[] },
+  { id:"5", title:"Snap Native Ad Review - BUILT Bar", assignee:"Catie", priority:"Low", platform:"Snap", dueDate:"2026-02-26", column:"To Do", subtasks:[] },
+  { id:"6", title:"Meta ASC Budget Reallocation", assignee:"Bryan", priority:"High", platform:"Meta", dueDate:"2026-02-20", column:"In Progress", subtasks:[
+    {text:"Pull current spend data",done:true},{text:"Draft reallocation proposal",done:true},{text:"Get client approval",done:false}
+  ]},
+  { id:"7", title:"Brand Lift Study Results Analysis", assignee:"Seve", priority:"Medium", platform:"Meta", dueDate:"2026-02-22", column:"Done", subtasks:[] },
+];
+// ============================================================
+
+const PRIORITY_COLORS = {
+  High:  {bg:"#FEE2E2",text:"#991B1B",dot:"#EF4444"},
+  Medium:{bg:"#FEF3C7",text:"#92400E",dot:"#F59E0B"},
+  Low:   {bg:"#DBEAFE",text:"#1E40AF",dot:"#3B82F6"},
+};
+const PLATFORM_COLORS = {
+  Meta:{bg:"#EEF2FF",text:"#4338CA"}, TikTok:{bg:"#F0FDFA",text:"#0F766E"},
+  Pinterest:{bg:"#FFF1F2",text:"#BE123C"}, Snap:{bg:"#FEFCE8",text:"#A16207"},
+  Nextdoor:{bg:"#F0FDF4",text:"#15803D"}, Reddit:{bg:"#FFF7ED",text:"#C2410C"},
+  X:{bg:"#F3F4F6",text:"#374151"},
+};
+
+let nextId=100, editingId=null, draggedId=null;
+let filterPriority="All", filterAssignee="All", filterPlatform="All";
+let promptCallback=null, modalSubtasks=[];
+
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+function isOverdue(ds,col){return ds&&col!=="Done"&&new Date(ds)<new Date(new Date().toDateString());}
+function fmtDate(ds){if(!ds)return"";return new Date(ds+"T00:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});}
+function colColor(i){return COLUMN_COLORS[i%COLUMN_COLORS.length];}
+function getFiltered(){
+  return tasks.filter(t=>{
+    if(filterPriority!=="All"&&t.priority!==filterPriority)return false;
+    if(filterAssignee!=="All"&&t.assignee!==filterAssignee)return false;
+    if(filterPlatform!=="All"&&t.platform!==filterPlatform)return false;
+    return true;
+  });
+}
+
+function renderFilters(){
+  const c=document.getElementById("filters");
+  const fs=[
+    {label:"Priority",value:filterPriority,options:["All",...PRIORITIES],key:"priority"},
+    {label:"Assignee",value:filterAssignee,options:["All",...TEAM_MEMBERS],key:"assignee"},
+    {label:"Platform",value:filterPlatform,options:["All",...PLATFORMS],key:"platform"},
+  ];
+  let h="";
+  fs.forEach(f=>{
+    h+=`<div class="filter-group"><span class="filter-label">${f.label}</span><select class="filter-select" onchange="setFilter('${f.key}',this.value)">`;
+    f.options.forEach(o=>{h+=`<option value="${esc(o)}"${o===f.value?" selected":""}>${esc(o)}</option>`;});
+    h+=`</select></div>`;
+  });
+  if(filterPriority!=="All"||filterAssignee!=="All"||filterPlatform!=="All")
+    h+=`<button class="btn-clear-filter" onclick="clearFilters()">Clear filters</button>`;
+  c.innerHTML=h;
+}
+function setFilter(k,v){if(k==="priority")filterPriority=v;if(k==="assignee")filterAssignee=v;if(k==="platform")filterPlatform=v;render();}
+function clearFilters(){filterPriority="All";filterAssignee="All";filterPlatform="All";render();}
+
+function render(){
+  renderFilters();
+  const board=document.getElementById("board");
+  const filtered=getFiltered();
+  let h="";
+  COLUMNS.forEach((col,ci)=>{
+    const ct=filtered.filter(t=>t.column===col);
+    const accent=colColor(ci);
+    const isDef=["To Do","In Progress","Done"].includes(col);
+
+    h+=`<div class="column" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropTask(event,\`${col.replace(/`/g,'')}\`);this.classList.remove('drag-over')">`;
+    h+=`<div class="col-header"><div class="col-header-left">
+      <div class="col-dot" style="background:${accent}"></div>
+      <span class="col-name">${esc(col)}</span>
+      <span class="col-count">${ct.length}</span>
+    </div><div class="col-btns">
+      <button class="col-add-btn" onclick="openNewTask(\`${col.replace(/`/g,'')}\`)" title="Add task">+</button>
+      ${!isDef?`<button class="col-del-btn" onclick="removeColumn(\`${col.replace(/`/g,'')}\`)" title="Remove section">×</button>`:""}
+    </div></div>`;
+    h+=`<div class="col-tasks">`;
+    if(!ct.length) h+=`<div class="empty-col">No tasks</div>`;
+    ct.forEach(t=>{
+      const pc=PRIORITY_COLORS[t.priority];
+      const plc=PLATFORM_COLORS[t.platform]||{bg:"#F3F4F6",text:"#374151"};
+      const overdue=isOverdue(t.dueDate,t.column);
+      const avBg=t.assignee==="Unassigned"?"#374151":"linear-gradient(135deg,#6366F1,#8B5CF6)";
+      const init=t.assignee==="Unassigned"?"?":t.assignee[0];
+      const nm=t.assignee==="Unassigned"?"—":t.assignee.split(" ")[0];
+      const cc=t.priority==="High"?"card-high":t.priority==="Medium"?"card-medium":"card-low";
+      const subs=t.subtasks||[];
+      const sd=subs.filter(s=>s.done).length;
+
+      h+=`<div class="task-card ${cc}" draggable="true" style="border-left:3px solid ${pc.dot}" ondragstart="dragStart('${t.id}')" ondragend="dragEnd()" onclick="openEditTask('${t.id}')">`;
+      h+=`<div class="task-tags"><span class="tag" style="background:${pc.bg};color:${pc.text}">${t.priority}</span><span class="tag" style="background:${plc.bg};color:${plc.text}">${esc(t.platform)}</span></div>`;
+      h+=`<p class="task-title${col==='Done'?' done':''}">${esc(t.title)}</p>`;
+      h+=`<div class="task-footer"><div class="assignee-row"><div class="avatar" style="background:${avBg}">${init}</div><span class="assignee-name">${esc(nm)}</span></div>`;
+      if(t.dueDate) h+=`<span class="due-date${overdue?' overdue':''}">${overdue?'⚠ ':''}${fmtDate(t.dueDate)}</span>`;
+      h+=`</div>`;
+      if(subs.length){
+        const pct=Math.round(sd/subs.length*100);
+        h+=`<div class="subtasks"><div class="subtask-header"><span class="subtask-label">Sub-tasks</span><span class="subtask-progress">${sd}/${subs.length}</span></div>`;
+        h+=`<div class="subtask-bar"><div class="subtask-fill" style="width:${pct}%"></div></div>`;
+        subs.forEach((s,si)=>{
+          h+=`<div class="subtask-item" onclick="event.stopPropagation();toggleSub('${t.id}',${si})"><div class="subtask-check${s.done?' checked':''}">${s.done?'✓':''}</div><span class="subtask-text${s.done?' checked':''}">${esc(s.text)}</span></div>`;
+        });
+        h+=`</div>`;
+      }
+      h+=`</div>`;
+    });
+    h+=`</div></div>`;
+  });
+  board.innerHTML=h;
+}
+
+function toggleSub(tid,si){const t=tasks.find(t=>t.id===tid);if(t&&t.subtasks[si]){t.subtasks[si].done=!t.subtasks[si].done;render();}}
+function dragStart(id){draggedId=id;}
+function dragEnd(){draggedId=null;}
+function dropTask(e,col){e.preventDefault();if(!draggedId)return;const t=tasks.find(t=>t.id===draggedId);if(t)t.column=col;draggedId=null;render();}
+
+function populateSelects(){
+  const fill=(id,opts)=>{document.getElementById(id).innerHTML=opts.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join("");};
+  fill("f-assignee",TEAM_MEMBERS);fill("f-priority",PRIORITIES);fill("f-platform",PLATFORMS);fill("f-column",COLUMNS);
+}
+function renderSubtaskFields(){
+  document.getElementById("subtask-edit-area").innerHTML=modalSubtasks.map((s,i)=>
+    `<div class="subtask-edit-row"><input class="subtask-edit-input" value="${esc(s.text)}" oninput="modalSubtasks[${i}].text=this.value" placeholder="Sub-task description..." /><button class="subtask-remove-btn" onclick="modalSubtasks.splice(${i},1);renderSubtaskFields()">×</button></div>`
+  ).join("");
+}
+function addSubtaskField(){modalSubtasks.push({text:"",done:false});renderSubtaskFields();const ins=document.querySelectorAll(".subtask-edit-input");if(ins.length)ins[ins.length-1].focus();}
+
+function openNewTask(col){
+  editingId=null;populateSelects();
+  document.getElementById("modal-title").textContent="New Task";
+  document.getElementById("f-title").value="";
+  document.getElementById("f-assignee").value="Unassigned";
+  document.getElementById("f-priority").value="Medium";
+  document.getElementById("f-platform").value="Meta";
+  document.getElementById("f-due").value="";
+  document.getElementById("f-column").value=col||"To Do";
+  document.getElementById("delete-area").innerHTML="";
+  document.getElementById("btn-save").textContent="Add Task";
+  modalSubtasks=[];renderSubtaskFields();
+  document.getElementById("modal").style.display="flex";
+  setTimeout(()=>document.getElementById("f-title").focus(),50);
+}
+function openEditTask(id){
+  const t=tasks.find(t=>t.id===id);if(!t)return;
+  editingId=id;populateSelects();
+  document.getElementById("modal-title").textContent="Edit Task";
+  document.getElementById("f-title").value=t.title;
+  document.getElementById("f-assignee").value=t.assignee;
+  document.getElementById("f-priority").value=t.priority;
+  document.getElementById("f-platform").value=t.platform;
+  document.getElementById("f-due").value=t.dueDate;
+  document.getElementById("f-column").value=t.column;
+  document.getElementById("delete-area").innerHTML=`<button class="btn-delete" onclick="deleteTask('${id}')">Delete</button>`;
+  document.getElementById("btn-save").textContent="Save Changes";
+  modalSubtasks=(t.subtasks||[]).map(s=>({...s}));renderSubtaskFields();
+  document.getElementById("modal").style.display="flex";
+}
+function closeModal(){document.getElementById("modal").style.display="none";editingId=null;}
+function saveTask(){
+  const title=document.getElementById("f-title").value.trim();if(!title)return;
+  const subs=modalSubtasks.filter(s=>s.text.trim());
+  const data={title,assignee:document.getElementById("f-assignee").value,priority:document.getElementById("f-priority").value,platform:document.getElementById("f-platform").value,dueDate:document.getElementById("f-due").value,column:document.getElementById("f-column").value,subtasks:subs};
+  if(editingId){const t=tasks.find(t=>t.id===editingId);if(t)Object.assign(t,data);}
+  else tasks.push({...data,id:String(nextId++)});
+  closeModal();render();
+}
+function deleteTask(id){tasks=tasks.filter(t=>t.id!==id);closeModal();render();}
+
+// Prompt modal
+function openPrompt(title,ph,cb){
+  document.getElementById("prompt-title").textContent=title;
+  document.getElementById("prompt-input").value="";
+  document.getElementById("prompt-input").placeholder=ph;
+  promptCallback=cb;
+  document.getElementById("prompt").style.display="flex";
+  setTimeout(()=>document.getElementById("prompt-input").focus(),50);
+}
+function closePrompt(){document.getElementById("prompt").style.display="none";promptCallback=null;}
+function confirmPrompt(){const v=document.getElementById("prompt-input").value.trim();if(v&&promptCallback)promptCallback(v);closePrompt();}
+
+function openAddColumn(){openPrompt("Add New Section","e.g. Backlog, On Hold, Awaiting Approval...",n=>{if(!COLUMNS.includes(n)){COLUMNS.push(n);render();}});}
+function openAddUser(){openPrompt("Add Team Member","e.g. Sarah",n=>{if(!TEAM_MEMBERS.includes(n)){const i=TEAM_MEMBERS.indexOf("Unassigned");if(i>-1)TEAM_MEMBERS.splice(i,0,n);else TEAM_MEMBERS.push(n);render();}});}
+function removeColumn(name){
+  const c=tasks.filter(t=>t.column===name).length;
+  const msg=c?`"${name}" has ${c} task(s). Move them to "To Do" and remove?`:`Remove "${name}"?`;
+  if(confirm(msg)){tasks.forEach(t=>{if(t.column===name)t.column="To Do";});COLUMNS=COLUMNS.filter(c=>c!==name);render();}
+}
+
+document.addEventListener("keydown",e=>{
+  if(document.getElementById("prompt").style.display==="flex"){if(e.key==="Enter")confirmPrompt();if(e.key==="Escape")closePrompt();return;}
+  if(document.getElementById("modal").style.display==="flex"){if(e.key==="Escape")closeModal();return;}
+});
+
+render();
+</script>
+</body>
+</html>
